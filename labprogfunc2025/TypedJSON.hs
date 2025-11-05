@@ -1,7 +1,7 @@
-{- Grupo: X
+{- Grupo: 64
    Integrante(s):
-     Apellido, Nombre, XXXXXXXX
-     Apellido, Nombre, XXXXXXXX
+     Pacheco, Juan Manuel, XXXXXXXX
+     Duarte, Santiago, 49937830
 -}
 
 module TypedJSON where

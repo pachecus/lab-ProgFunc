@@ -1,7 +1,7 @@
-{- Grupo: X
+{- Grupo: 64
    Integrante(s):
-     Apellido, Nombre, XXXXXXXX
-     Apellido, Nombre, XXXXXXXX
+     Pacheco, Juan Manuel, XXXXXXXX
+     Duarte, Santiago, 49937830
 -}
 
 module JSONLibrary
@@ -43,22 +43,25 @@ lookupFieldObj = undefined
 -- retorna la lista de claves de un objeto, manteniendo el orden en el
 -- que se encontraban.
 keysOf :: Object JSON -> [Key]
-keysOf = undefined
+keysOf [] = []
+keysOf (j:js) = (fst j):(keysOf js)
 
 -- Retorna una lista con los valores contenidos en los campos de un objeto,
 -- manteniendo el orden en el que se encontraban.
 valuesOf :: Object JSON -> [JSON]
-valuesOf = undefined
+valuesOf [] = []
+valuesOf (j:js) = (snd j):(valuesOf js)
 
 -- retorna todos los campos de un objeto, en el orden en que se encontraban.
 entriesOf :: Object JSON -> [(Key,JSON)]
-entriesOf = undefined
+entriesOf o = zip (keysOf o) (valuesOf o)
 
 -- Se combinan dos objetos, en orden.  En caso que haya claves
 -- repetidas en ambos objetos, en la unión tienen prioridad los
 -- campos del primer objeto.
 leftJoin :: Object a -> Object a -> Object a
-leftJoin = undefined
+leftJoin [] o = o
+leftJoin o [] = o
 
 -- Se combinan dos objetos, en orden.  En caso que haya claves
 -- repetidas en ambos objetos, en la unión tienen prioridad los
@@ -69,7 +72,10 @@ rightJoin = undefined
 -- Dado un predicado sobre objetos JSON, y un arreglo, construye el
 -- arreglo con los elementos que satisfacen el predicado.
 filterArray :: (JSON -> Bool) ->  Array -> Array
-filterArray = undefined
+filterArray p [] = []
+filterArray p (a:as)
+      | p a = a:(filterArray p as)
+      | otherwise = filterArray p as
 
 -- Se inserta un campo en un objeto. Si las claves del objeto están
 -- ordenadas lexicográficamente, el resultado debe conservar esta
@@ -79,7 +85,7 @@ insertKV = undefined
 
 -- Se inserta un campo en un objeto, al inicio
 consKV :: (Key, v) -> Object v -> Object v
-consKV = undefined
+consKV c o = (c:o)
 
 -- ordena claves de un objeto
 sortKeys :: Object a -> Object a
@@ -88,57 +94,71 @@ sortKeys = undefined
 
 -- constructoras
 mkJString :: String -> JSON
-mkJString = undefined
+mkJString s = JString s
 
 mkJNumber :: Integer -> JSON
-mkJNumber = undefined
+mkJNumber i = JNumber i
 
 mkJBoolean :: Bool -> JSON
-mkJBoolean = undefined
+mkJBoolean b = JBoolean b
 
 mkJNull :: () -> JSON
-mkJNull = undefined
+mkJNull () = JNull
 
 mkJArray :: [JSON] -> JSON
-mkJArray = undefined
+mkJArray a = JArray a
 
 mkJObject :: [(Key, JSON)] -> JSON
-mkJObject = undefined
+mkJObject o = JObject
 
 
 -- destructoras
 fromJString :: JSON -> Maybe String
-fromJString = undefined
+fromJString (JString s) = Just s
+fromJString _ = Nothing
 
 fromJNumber :: JSON -> Maybe Integer
-fromJNumber = undefined
+--fromJNumber = 
+fromJNumber _ = Nothing
 
 fromJBoolean  :: JSON -> Maybe Bool
-fromJBoolean = undefined
+fromJBoolean (JBoolean b) = Just b
+fromJBoolean _ = Nothing
 
 fromJObject :: JSON -> Maybe (Object JSON)
 fromJObject = undefined
 
+
 fromJArray :: JSON -> Maybe [JSON]
-fromJArray = undefined
+fromJArray (JArray a) = Just a
+fromJArray _ = Nothing
 
 
 -- predicados
 isJNumber :: JSON -> Bool
-isJNumber = undefined
+--isJNumber (JNumber ) = True
+isJNumber _ = False
 
 isJNull :: JSON -> Bool
-isJNull = undefined
+isJNull JNull = True
+isJNull _ = False
 
 isJString :: JSON -> Bool
-isJString  = undefined
+isJString = undefined
+--isJString (JString String) = True
+--isJString _ = False
 
 isJObject :: JSON -> Bool
-isJObject  = undefined
+isJObject = undefined
+--isJObject (JObject ) = True
+--isJObject _ = False
 
 isJArray :: JSON -> Bool
-isJArray   = undefined
+isJArray (JArray []) = True
+isJArray _ = False
 
 isJBoolean :: JSON -> Bool
-isJBoolean = undefined
+isJBoolean (JBoolean True) = True
+isJBoolean (JBoolean False) = True
+isJBoolean _ = False
 
