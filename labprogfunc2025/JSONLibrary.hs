@@ -109,7 +109,8 @@ mkJArray :: [JSON] -> JSON
 mkJArray a = JArray a
 
 mkJObject :: [(Key, JSON)] -> JSON
-mkJObject o = JObject
+--mkJObject o = JObject
+mkJObject = undefined
 
 
 -- destructoras
