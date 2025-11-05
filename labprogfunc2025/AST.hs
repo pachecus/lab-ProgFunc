@@ -27,7 +27,16 @@ type JSONNumber = Integer
 
 -- instancia de Show
 instance Show JSON where
-    show = undefined
+    show (JString s) = show s
+    show (JNumber n) = show n
+    -- a los JBoolean los ejemplos los muestran en minuscula, por eso los separo
+    show (JBoolean True) = "true"
+    show (JBoolean False) = "false"
+    show (JNull) = "null"
+    show (JArray xs) = "[" ++ intercalate ", " (map show xs) ++ "]"
+    show (JObject o) = "{" ++ intercalate ", " (map showPair o) ++ "}"
+        where 
+            showPair (k, v) = show k ++ ": " ++ show v
 
 -- Instancia de read.
 -- Se hace el parsing que se define más adelante.
