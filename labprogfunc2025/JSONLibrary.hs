@@ -34,22 +34,27 @@ import AST
  retorna el valor de más a la derecha.
 -}
 lookupField :: JSON -> Key -> Maybe JSON
-lookupField = undefined
+lookupField (JObject o) k = lookupFieldObj o k
+lookupField _ _ = Nothing
 
 -- Análoga a la anterior, pero el primer argumento es un objeto.
 lookupFieldObj :: Object JSON -> Key -> Maybe JSON
-lookupFieldObj o k = lfor o k Nothing 
-      where
-            lfor [] _ m  = m
-            lfor (x:xs) k m
-                  | k == fst x = lfor xs k (Just (snd x))
-                  | otherwise = lfor xs k m
+lookupFieldObj o k = lookupFieldObjAux o k Nothing 
+
+lookupFieldObjAux :: Object JSON -> Key -> Maybe JSON -> Maybe JSON
+lookupFieldObjAux [] _ m  = m
+lookupFieldObjAux (x:xs) k m
+      | k == fst x = lookupFieldObjAux xs k (Just (snd x))
+      | otherwise = lookupFieldObjAux xs k m
 
 -- retorna la lista de claves de un objeto, manteniendo el orden en el
 -- que se encontraban.
 keysOf :: Object JSON -> [Key]
-keysOf [] = []
-keysOf (j:js) = (fst j):(keysOf js)
+keysOf = keysOfObject 
+
+keysOfObject :: Object a -> [Key]
+keysOfObject [] = []
+keysOfObject (a:as) = (fst a):(keysOfObject as)
 
 -- Retorna una lista con los valores contenidos en los campos de un objeto,
 -- manteniendo el orden en el que se encontraban.
@@ -60,20 +65,24 @@ valuesOf (j:js) = (snd j):(valuesOf js)
 -- retorna todos los campos de un objeto, en el orden en que se encontraban.
 entriesOf :: Object JSON -> [(Key,JSON)]
 entriesOf o = o
---entriesOf o = zip (keysOf o) (valuesOf o)
 
 -- Se combinan dos objetos, en orden.  En caso que haya claves
 -- repetidas en ambos objetos, en la unión tienen prioridad los
 -- campos del primer objeto.
 leftJoin :: Object a -> Object a -> Object a
-leftJoin [] o = o
-leftJoin o [] = o
+leftJoin l r = l ++ raux
+      where
+            kl = keysOfObject l
+            raux = [ j | j <- r, not (elem (fst j) kl)]
 
 -- Se combinan dos objetos, en orden.  En caso que haya claves
 -- repetidas en ambos objetos, en la unión tienen prioridad los
 -- campos del segundo objeto.
 rightJoin :: Object a -> Object a -> Object a
-rightJoin = undefined
+rightJoin l r = laux ++ r
+      where
+            kr = keysOfObject r
+            laux = [ j | j <- l, not (elem (fst j) kr)]
 
 -- Dado un predicado sobre objetos JSON, y un arreglo, construye el
 -- arreglo con los elementos que satisfacen el predicado.
@@ -116,7 +125,7 @@ mkJBoolean :: Bool -> JSON
 mkJBoolean b = (JBoolean b)
 
 mkJNull :: () -> JSON
-mkJNull () = (JNull)
+mkJNull () = JNull
 
 mkJArray :: [JSON] -> JSON
 mkJArray a = (JArray a)
@@ -153,7 +162,7 @@ isJNumber (JNumber n) = True
 isJNumber _ = False
 
 isJNull :: JSON -> Bool
-isJNull (JNull) = True
+isJNull JNull = True
 isJNull _ = False
 
 isJString :: JSON -> Bool
