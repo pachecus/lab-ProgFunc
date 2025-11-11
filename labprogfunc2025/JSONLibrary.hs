@@ -38,7 +38,12 @@ lookupField = undefined
 
 -- Análoga a la anterior, pero el primer argumento es un objeto.
 lookupFieldObj :: Object JSON -> Key -> Maybe JSON
-lookupFieldObj = undefined
+lookupFieldObj o k = lfor o k Nothing 
+      where
+            lfor [] _ m  = m
+            lfor (x:xs) k m
+                  | k == fst x = lfor xs k (Just (snd x))
+                  | otherwise = lfor xs k m
 
 -- retorna la lista de claves de un objeto, manteniendo el orden en el
 -- que se encontraban.
@@ -54,7 +59,8 @@ valuesOf (j:js) = (snd j):(valuesOf js)
 
 -- retorna todos los campos de un objeto, en el orden en que se encontraban.
 entriesOf :: Object JSON -> [(Key,JSON)]
-entriesOf o = zip (keysOf o) (valuesOf o)
+entriesOf o = o
+--entriesOf o = zip (keysOf o) (valuesOf o)
 
 -- Se combinan dos objetos, en orden.  En caso que haya claves
 -- repetidas en ambos objetos, en la unión tienen prioridad los
@@ -81,7 +87,10 @@ filterArray p (a:as)
 -- ordenadas lexicográficamente, el resultado debe conservar esta
 -- propiedad.
 insertKV :: (Key, v) -> Object v -> Object v
-insertKV = undefined
+insertKV (k, v) [] = [(k, v)]
+insertKV (k, v) (o:os)
+      | k < fst o = (k, v):(o:os)
+      | otherwise = o:insertKV (k, v) os
 
 -- Se inserta un campo en un objeto, al inicio
 consKV :: (Key, v) -> Object v -> Object v
@@ -89,77 +98,77 @@ consKV c o = (c:o)
 
 -- ordena claves de un objeto
 sortKeys :: Object a -> Object a
-sortKeys = undefined
+sortKeys [] = []
+sortKeys (o:os) = sortKeys (menores o) ++ [o] ++ sortKeys (mayores o)
+      where
+            menores o = [ x | x <- os, (fst x) < (fst o) ]
+            mayores o = [ x | x <- os, (fst x) >= (fst o) ]
 
 
 -- constructoras
 mkJString :: String -> JSON
-mkJString s = JString s
+mkJString s = (JString s)
 
 mkJNumber :: Integer -> JSON
-mkJNumber i = JNumber i
+mkJNumber i = (JNumber i)
 
 mkJBoolean :: Bool -> JSON
-mkJBoolean b = JBoolean b
+mkJBoolean b = (JBoolean b)
 
 mkJNull :: () -> JSON
-mkJNull () = JNull
+mkJNull () = (JNull)
 
 mkJArray :: [JSON] -> JSON
-mkJArray a = JArray a
+mkJArray a = (JArray a)
 
 mkJObject :: [(Key, JSON)] -> JSON
---mkJObject o = JObject
-mkJObject = undefined
+mkJObject o = (JObject o)
 
 
 -- destructoras
 fromJString :: JSON -> Maybe String
-fromJString (JString s) = Just s
+fromJString (JString s) = (Just s)
 fromJString _ = Nothing
 
 fromJNumber :: JSON -> Maybe Integer
---fromJNumber = 
+fromJNumber (JNumber i) =  (Just i)
 fromJNumber _ = Nothing
 
-fromJBoolean  :: JSON -> Maybe Bool
-fromJBoolean (JBoolean b) = Just b
+fromJBoolean :: JSON -> Maybe Bool
+fromJBoolean (JBoolean b) = (Just b)
 fromJBoolean _ = Nothing
 
 fromJObject :: JSON -> Maybe (Object JSON)
-fromJObject = undefined
-
+fromJObject (JObject o) = (Just o) 
+fromJObject _ = Nothing
 
 fromJArray :: JSON -> Maybe [JSON]
-fromJArray (JArray a) = Just a
+fromJArray (JArray a) = (Just a)
 fromJArray _ = Nothing
 
 
 -- predicados
 isJNumber :: JSON -> Bool
---isJNumber (JNumber ) = True
+isJNumber (JNumber n) = True
 isJNumber _ = False
 
 isJNull :: JSON -> Bool
-isJNull JNull = True
+isJNull (JNull) = True
 isJNull _ = False
 
 isJString :: JSON -> Bool
-isJString = undefined
---isJString (JString String) = True
---isJString _ = False
+isJString (JString s) = True
+isJString _ = False
 
 isJObject :: JSON -> Bool
-isJObject = undefined
---isJObject (JObject ) = True
---isJObject _ = False
+isJObject (JObject o) = True
+isJObject _ = False
 
 isJArray :: JSON -> Bool
-isJArray (JArray []) = True
+isJArray (JArray a) = True
 isJArray _ = False
 
 isJBoolean :: JSON -> Bool
-isJBoolean (JBoolean True) = True
-isJBoolean (JBoolean False) = True
+isJBoolean (JBoolean b) = True
 isJBoolean _ = False
 
