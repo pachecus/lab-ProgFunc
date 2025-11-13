@@ -30,31 +30,6 @@ tieneRepetidas (x:xs)
   | x `elem` xs = True -- verificar si x esta en xs
   | otherwise = tieneRepetidas xs
 
-
--- ordenar usando merge sort
-ordenar:: [(String, a)] -> [(String, a)]
-ordenar [] = []
-ordenar [x] = [x]
--- ordenar [(k,v)] = [(k,v)]
-ordenar xs =
-    let (izq, der) = partes xs -- dividir partes para el merge sort
-    in merge (ordenar izq) (ordenar der) -- ordenar ambas partes y mergear
-
--- dividir un arreglo a la mitad
-partes:: [a] -> ([a], [a])
-partes [] = ([], [])
-partes (x:xs) =
-    let (a, b) = partes xs
-    in (x:b, a)
-
--- merge ordenado de dos listas, la idea es ir pasando elementos de una lista a la otra hasta que una este vacia
-merge:: [(String, a)] -> [(String, a)] -> [(String, a)]
-merge [] ys = ys -- si priemra lista es vacia se retorna la segunda
-merge xs [] = xs -- si segunda lista es vacia se retorna la primera
-merge ((k1, v1):xs) ((k2, v2):ys) 
-  | k1 <= k2 = (k1,v1) : merge xs ((k2,v2):ys) -- clave del primer elemento menor que la del segundo
-  | otherwise = (k2, v2) : merge ((k1, v1):xs) ys
-
 procesarCampos :: [(String, JSON)] -> Maybe [(String, JSONType)]
 procesarCampos [] = Just []
 procesarCampos ((k, v):xs) =
@@ -87,24 +62,25 @@ typeOf (JArray (x:xs)) =
 
 typeOf (JObject elems)
     | null elems = Nothing -- no se permiten objetos vacios
-    | tieneRepetidas (map fst elems) = Nothing -- si hay claves repetidas
+    | tieneRepetidas (keysOf elems) = Nothing
     | otherwise =
       case procesarCampos elems of
             Nothing -> Nothing
             Just camposTipados ->
-                let ordenado = ordenar camposTipados
+                let ordenado = sortKeys camposTipados
                 in Just (TyObject ordenado)
 
 
 -- decide si las claves de un objeto están ordenadas
 -- lexicográficamente y no se repiten.
 objectWf :: Object JSONType -> Bool
-objectWf [] = False
-objectWf [(_,_)] = True -- un solo campo siempre esta ordenado
-objectWf ((k1,_):(k2,v2):xs)
-  | k1 == k2 = False -- clave repetida
-  | k1 > k2 = False -- desorden
-  | otherwise = objectWf ((k2,v2):xs)
+objectWf obj =
+  let keys = map fst obj -- keys son las claves del type del objeto
+  in not (null obj) -- el objeto no es null
+     && keys == sort keys -- las claves estan ordenadas
+     && not (tieneRepetidas keys) -- no hay claves repetidas
+
+
 
 
 -- decide si todos los tipos objeto contenidos en un tipo JSON
