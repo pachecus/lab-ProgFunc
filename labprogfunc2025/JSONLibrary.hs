@@ -86,7 +86,7 @@ rightJoin l r = laux ++ r
 
 -- Dado un predicado sobre objetos JSON, y un arreglo, construye el
 -- arreglo con los elementos que satisfacen el predicado.
-filterArray :: (JSON -> Bool) ->  Array -> Array
+filterArray :: (JSON -> Bool) -> Array -> Array
 filterArray p [] = []
 filterArray p (a:as)
       | p a = a:(filterArray p as)
@@ -108,7 +108,7 @@ consKV c o = (c:o)
 -- ordena claves de un objeto
 sortKeys :: Object a -> Object a
 sortKeys [] = []
-sortKeys (o:os) = sortKeys (menores o) ++ [o] ++ sortKeys (mayores o)
+sortKeys (o:os) = (sortKeys (menores o)) ++ [o] ++ (sortKeys (mayores o))
       where
             menores o = [ x | x <- os, (fst x) < (fst o) ]
             mayores o = [ x | x <- os, (fst x) >= (fst o) ]

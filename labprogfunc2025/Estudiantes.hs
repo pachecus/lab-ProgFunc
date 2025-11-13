@@ -15,26 +15,55 @@ import TypedJSON
 ---------------------------------------------------------------------------------------
 
 
+--tyEstudiante =
+--TyObject [ ("nombre", TyString),
+--("apellido", TyString),
+--("CI", TyNum),
+--("cursos", TyArray tyCurso) ]
+--tyCurso =
+--TyObject [("nombre", TyString),
+--("codigo", TyNum),
+--("anio", TyNum),
+--("semestre", TyNum),
+--("nota", TyNum)]
+
 -- decide si un valor que representa un estudiante esta bien formado
 estaBienFormadoEstudiante :: JSON -> Bool  
-estaBienFormadoEstudiante a = undefined
+estaBienFormadoEstudiante = undefined
+
 
 -- getters
 getCI :: JSON -> Maybe Integer
-getCI = undefined
+getCI o = case lookupField o "CI" of
+    Nothing -> Nothing
+    Just i -> fromJNumber i
 
 getNombre :: JSON -> Maybe String
-getNombre = undefined
+getNombre o = case lookupField o "nombre" of
+    Nothing -> Nothing
+    Just s -> fromJString s
 
 getApellido :: JSON -> Maybe String
-getApellido = undefined
+getApellido o = case lookupField o "apellido" of
+    Nothing -> Nothing
+    Just s -> fromJString s
 
 getCursos :: JSON -> Maybe JSON
-getCursos = undefined
+getCursos o = lookupField o "cursos"
 
 -- obtiene arreglo con cursos que fueron aprobados
 aprobados :: JSON -> Maybe JSON
-aprobados = undefined
+aprobados e = (
+  case getCursos e of
+    Nothing -> Nothing
+    Just c ->
+      case fromJArray c of
+        Nothing -> Nothing
+        Just a ->
+          let getNota (Just n) = n
+              filtrado = filterArray (\o -> getNota (lookupField o "nota") >= 3) a
+          in Just (mkJArray filtrado))
+
 
 -- obtiene arreglo con cursos rendidos en un año dado
 enAnio :: Integer -> JSON -> Maybe JSON
