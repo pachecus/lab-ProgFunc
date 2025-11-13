@@ -62,42 +62,112 @@ estudiante1 = mkJObject
           ]
       ])
   ]
+estudianteMalo :: JSON
+estudianteMalo = mkJObject
+        [ ("CI", mkJString "12345678")  -- debería ser número
+        , ("nombre", mkJString "Juan")
+        , ("apellido", mkJString "Pacheco")
+        , ("cursos", mkJArray [])
+        ]
+
+estudianteMalo2 :: JSON
+estudianteMalo2 = mkJObject
+        [ ("CI", mkJNumber 12345678)
+        , ("nombre", mkJString "Juan")
+        , ("apellido", mkJString "Pacheco")
+        , ("cursos", mkJArray
+            [ mkJObject
+                [ ("anio", mkJNumber 2024)
+                , ("nombre", mkJString "Paradigmas de Programación")
+                ] -- faltan campos
+            ])
+        ]
+
+-- Estudiante al cual le falta la nota
+estudianteMalo3 :: JSON
+estudianteMalo3 = mkJObject
+  [ ("CI", mkJNumber 12345678)
+  , ("nombre", mkJString "Juan")
+  , ("apellido", mkJString "Pacheco")
+  , ("cursos", mkJArray
+      [ mkJObject
+          [ ("anio", mkJNumber 2024)
+          , ("codigo", mkJNumber 101)
+          , ("nombre", mkJString "Paradigmas")
+          , ("nota", mkJNumber 10)
+          , ("semestre", mkJNumber 1)
+          ],
+        mkJObject
+          [ ("anio", mkJNumber 2022)
+          , ("codigo", mkJNumber 101)
+          , ("nombre", mkJString "Programación 2")
+          , ("semestre", mkJNumber 1)  -- ❌ falta "nota"
+          ]
+      ])
+  ]
+
 
 
 -- decide si un valor que representa un estudiante esta bien formado
 estaBienFormadoEstudiante :: JSON -> Bool  
-estaBienFormadoEstudiante a = undefined
+estaBienFormadoEstudiante a = hasType a tyEstudiante
 
 
 -- getters
 getCI :: JSON -> Maybe Integer
 -- falta verificar que esta bien formado
-getCI obj = case lookupField obj "CI" of
-  Nothing -> Nothing
-  Just i -> fromJNumber i
-
-getNombre :: JSON -> Maybe String
-getNombre obj = case lookupField obj "nombre" of
-  Nothing -> Nothing
-  Just i -> fromJString i
-
-getApellido :: JSON -> Maybe String
-getApellido obj = case lookupField obj "apellido" of
-  Nothing -> Nothing
-  Just i -> fromJString i
-
-getCursos :: JSON -> Maybe JSON
-getCursos obj = lookupField obj "cursos"
-
-getNota :: JSON -> Maybe Integer
-getNota obj =
-  case lookupField obj "nota" of
+getCI obj
+  | not (estaBienFormadoEstudiante obj) = Nothing
+  | otherwise = case lookupField obj "CI" of
     Nothing -> Nothing
     Just i -> fromJNumber i
 
+getNombre :: JSON -> Maybe String
+getNombre obj
+  | not (estaBienFormadoEstudiante obj) = Nothing
+  | otherwise = case lookupField obj "nombre" of
+    Nothing -> Nothing
+    Just i -> fromJString i
+
+getApellido :: JSON -> Maybe String
+getApellido obj
+  | not (estaBienFormadoEstudiante obj) = Nothing
+  | otherwise = case lookupField obj "apellido" of
+    Nothing -> Nothing
+    Just i -> fromJString i
+
+getCursos :: JSON -> Maybe JSON
+getCursos obj
+  | not (estaBienFormadoEstudiante obj) = Nothing
+  | otherwise = lookupField obj "cursos"
+
+
+-- Getters de Curso para implememtar aprobados, enAnio, promedio
+getNota :: JSON -> Maybe Integer
+getNota obj
+  | not (hasType obj tyCurso) = Nothing -- chequear si obj es de tipo curso
+  | otherwise = case lookupField obj "nota" of
+      Nothing -> Nothing
+      Just i -> fromJNumber i
+
 getAnio :: JSON -> Maybe Integer
-getAnio obj =
-  case lookupField obj "anio" of
+getAnio obj
+  | not (hasType obj tyCurso) = Nothing -- chequear si obj es de tipo curso
+  | otherwise = case lookupField obj "anio" of
+    Nothing -> Nothing
+    Just i -> fromJNumber i
+
+getSemestre :: JSON -> Maybe Integer
+getSemestre obj
+  | not (hasType obj tyCurso) = Nothing
+  | otherwise = case lookupField obj "semestre" of
+    Nothing -> Nothing
+    Just i -> fromJNumber i
+
+getCodigo :: JSON -> Maybe Integer
+getCodigo obj
+  | not (hasType obj tyCurso) = Nothing
+  | otherwise = case lookupField obj "codigo" of
     Nothing -> Nothing
     Just i -> fromJNumber i
 
@@ -127,8 +197,9 @@ enAnio anio obj =
 
 -- retorna el promedio de las notas de los cursos
 promedioEscolaridad :: JSON -> Maybe Float
-promedioEscolaridad obj =
-  case getCursos obj of
+promedioEscolaridad obj
+  | not (estaBienFormadoEstudiante obj) = Nothing
+  | otherwise = case getCursos obj of
     Nothing -> Nothing
     Just c ->
       case fromJArray c of
